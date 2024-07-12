@@ -1,0 +1,6 @@
+# проверка покрытия тестами
+coverage run --source='.' manage.py test .
+# сгенерировать отчёт
+coverage report
+# создать html отчёт
+coverage html
