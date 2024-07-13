@@ -4,3 +4,5 @@ coverage run --source='.' manage.py test .
 coverage report
 # создать html отчёт
 coverage html
+
+pip install django-filter # пакет для реализации фильтрации
