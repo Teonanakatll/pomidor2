@@ -6,3 +6,4 @@ coverage report
 coverage html
 
 pip install django-filter # пакет для реализации фильтрации
+pip install social-auth-app-django # пакет по аутентификации через социальные сети, в инстапп 'social-django'

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'store.apps.StoreConfig',
+
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -56,7 +58,7 @@ ROOT_URLCONF = 'books.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,6 +131,27 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# чтобы social_django мог пользоваться jsonfield в django
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+
+# бэкэнды которые будут использоваться в приложении для аутентификации в проекте
+AUTHENTICATION_BACKENDS = (
+    # 'social_core.backends.google.GoogleOpenId',
+    # 'social_core.backends.google.GoogleOAuth2',
+    # 'social_core.backends.google.GooglOAuth',
+    # 'social_core.backends.twitter.TwitterOAuth',
+    # 'social_core.backends.yahoo.YahooOpenId',
+
+    'social_core.backends.github.GithubOAuth2',
+
+    # обязательный бэкэнд django
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+# ключи которые выдал github для использования его OAuth
+SOCIAL_AUTH_GITHUB_KEY = 'Ov23liQ17YUZUEECWqsN'
+SOCIAL_AUTH_GITHUB_SECRET = '19e5e289fdd6129dce2064672bbaac026118a358'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
