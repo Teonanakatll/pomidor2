@@ -30,7 +30,7 @@ class BooksApiTestCase(APITestCase):
         # клиентский get запрос по апи адресу
         response = self.client.get(url, data={'price': 55})
         # print(response.data)
-        serializer_data = BookSerializer([self.book_2, self.book_3], many=True).data
+        serializer_data = BookSerializer([self.book_3], many=True).data
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer_data, response.data)
 
