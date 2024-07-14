@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APITestCase
 
 from store.models import Book
@@ -13,9 +14,9 @@ class BooksApiTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create(username='test_username')
 
-        self.book_1 = Book.objects.create(name='Test book 1', author_name='Author 1', price=25)
-        self.book_2 = Book.objects.create(name='Test book 2', author_name='Author 5', price=75)
-        self.book_3 = Book.objects.create(name='Test book Author 1', author_name='Author 2', price=55)
+        self.book_1 = Book.objects.create(name='Test book 1', author_name='Author 1', price=25, owner=self.user)
+        self.book_2 = Book.objects.create(name='Test book 2', author_name='Author 5', price=75, owner=self.user)
+        self.book_3 = Book.objects.create(name='Test book Author 1', author_name='Author 2', price=55, owner=self.user)
 
     def test_get_detail(self):
         url = reverse('book-detail', args=(self.book_2.id,))
@@ -78,6 +79,7 @@ class BooksApiTestCase(APITestCase):
         response = self.client.post(url, data=json_data, content_type='application/json')
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(4, Book.objects.all().count())
+        self.assertEqual(self.user, Book.objects.last().owner)
 
     def test_update(self):
         url = reverse('book-detail', args=(self.book_1.id,))
@@ -99,6 +101,47 @@ class BooksApiTestCase(APITestCase):
         self.book_1.refresh_from_db()
         self.assertEqual(575, self.book_1.price)
 
+    def test_update_not_owner(self):
+        self.user2 = User.objects.create(username='test_username2')
+        url = reverse('book-detail', args=(self.book_1.id,))
+        data = {
+            'name': self.book_1.name,
+            'price': 575,
+            'author_name': self.book_1.author_name
+        }
+        # преобразуем словарь в json строку
+        json_data = json.dumps(data)
+
+        # авторизуемся с помощю созданнго юзера
+        self.client.force_login(self.user2)
+
+        response = self.client.put(url, data=json_data, content_type='application/json')
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        self.assertEqual({'detail': ErrorDetail(string='You do not have permission to perform this action.', code='permission_denied')}, response.data)
+        # обновляем запись из дб
+        self.book_1.refresh_from_db()
+        self.assertEqual(25, self.book_1.price)
+
+    def test_update_not_owner_but_staff(self):
+        self.user2 = User.objects.create(username='test_username2', is_staff=True)
+        url = reverse('book-detail', args=(self.book_1.id,))
+        data = {
+            'name': self.book_1.name,
+            'price': 575,
+            'author_name': self.book_1.author_name
+        }
+        # преобразуем словарь в json строку
+        json_data = json.dumps(data)
+
+        # авторизуемся с помощю созданнго юзера
+        self.client.force_login(self.user2)
+
+        response = self.client.put(url, data=json_data, content_type='application/json')
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        # обновляем запись из дб
+        self.book_1.refresh_from_db()
+        self.assertEqual(575, self.book_1.price)
+
     def test_delete(self):
         url = reverse('book-detail', args=(self.book_3.id,))
 
@@ -109,3 +152,15 @@ class BooksApiTestCase(APITestCase):
         exist = Book.objects.filter(id=self.book_3.id).exists()
         self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
         self.assertEqual(False, exist)
+
+    def test_delete_not_owner(self):
+        self.user2 = User.objects.create(username='Test_user2')
+        url = reverse('book-detail', args=(self.book_3.id,))
+
+        # для всех манипуляций с обьектами нужно быть авторизованным
+        self.client.force_login(self.user2)
+
+        response = self.client.delete(url)
+        exist = Book.objects.filter(id=self.book_3.id).exists()
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        self.assertEqual(True, exist)

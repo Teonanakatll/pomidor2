@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.viewsets import ModelViewSet
 
 from store.models import Book
+from store.permissions import IsOwnerOrStaffOrReadOnly
 from store.serializers import BookSerializer
 
 
@@ -18,7 +19,14 @@ class BookViewSet(ModelViewSet):
     search_fields = ['name', 'author_name']       # ?search=
     ordering_fields = ['price', 'author_name']    # ?ordering=   price   -price
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrStaffOrReadOnly]
+
+    # чтобы добавить request юзера в качестве хозяина книги при добавлении записи чезез api
+    # переопределим метод perform_create (чтобы не менять стандартное поведения метода create)
+    def perform_create(self, serializer):
+        # берём данные сериализатора и добавляем в него словарь 'owner': request.user
+        serializer.validated_data['owner'] = self.request.user
+        serializer.save()
 
 def auth(request):
     return render(request, 'oauth.html')
