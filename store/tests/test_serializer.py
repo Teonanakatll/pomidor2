@@ -10,6 +10,7 @@ from store.serializers import BookSerializer
 class BookSerializerTestCase(TestCase):
     def test_ok(self):
         test_user = User.objects.create(username='Testuser')
+        test_user2 = User.objects.create(username="Testuser2")
 
         book_1 = Book.objects.create(name='Test book 1', price=25, author_name='Author 1', owner=test_user)
         book_2 = Book.objects.create(name='Test book 2', price=55, author_name='Author 2', owner=test_user)
