@@ -3,10 +3,11 @@ from django.db import models
 
 
 class Book(models.Model):
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=7, decimal_places=2)
-    author_name = models.CharField(max_length=255)
-    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='my_books')
+    name = models.CharField(max_length=255, verbose_name='Название')
+    price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='Цена')
+    author_name = models.CharField(max_length=255, verbose_name='Имя автора')
+    discount = models.SmallIntegerField(default=0, null=True, verbose_name='Скидка')
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='my_books', verbose_name='Владелец')
     # явно связываем отношение ManyToMany через нашу таблицу, чтобы добавить в неё дополнительные поля
     # так как у нас дво поля связанны с User, возникает конфликт при обращении от юзера к книгам,
     # user.book (то ли прочитал, то ли написал), для этого прописываем related_name, по умолчанию related_name=book_set()
