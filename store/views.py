@@ -1,4 +1,5 @@
-from django.db.models import Count, Case, When, Avg, F
+from django.contrib.auth.models import User
+from django.db.models import Count, Case, When, Avg, F, Prefetch
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -14,6 +15,10 @@ from store.serializers import BookSerializer, UserBookRelationSerializer
 class BookViewSet(ModelViewSet):
     # F-класс служит для обращения к полям текущей модели при орм запросах
     # Q-класс служит для записи условий фильтрации полей текущей модели при логических конструкциях в орм джанго
+
+    # select_related() - выбирает один обьект связанный с книгой (ForeignKey)
+    # prefetch_related() - выбирает все связанные обьекты (ManyToMany)
+
     # Case() используется для создания условных выражений в запросах к бд. Он позволяет выполнять sql-подобные
     # условия (как CASE в sql), когда нужно выполнить различные действия в зависимости от значения полей.
     # When() - указывает когда необходимо подсчитывать значения. then - в током случае возвращаем 1
@@ -22,7 +27,9 @@ class BookViewSet(ModelViewSet):
     queryset = Book.objects.all().annotate(
         annotated_likes=Count(Case(When(userbookrelation__like=True, then=1))),
         rating=Avg('userbookrelation__rate'),
-        price_with_discount=(F('price') - (F('price') / 100) * F('discount'))).order_by('id')
+        price_with_discount=(F('price') - (F('price') / 100) * F('discount')),
+        owner_name=F('owner__username')
+        ).prefetch_related(Prefetch('readers', queryset=User.objects.all().only('first_name', 'last_name'))).order_by('id')
 
     serializer_class = BookSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
