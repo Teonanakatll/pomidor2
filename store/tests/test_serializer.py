@@ -19,7 +19,10 @@ class BookSerializerTestCase(TestCase):
 
         UserBookRelation.objects.create(user=user1, book=book_1, like=True, rate=5)
         UserBookRelation.objects.create(user=user2, book=book_1, like=True, rate=5)
-        UserBookRelation.objects.create(user=user3, book=book_1, like=True, rate=4)
+        user_book_3 = UserBookRelation.objects.create(user=user3, book=book_1, like=True)
+        # тестируем обновление рейтинга
+        user_book_3.rate = 4
+        user_book_3.save()
 
         UserBookRelation.objects.create(user=user1, book=book_2, like=True, rate=3)
         UserBookRelation.objects.create(user=user2, book=book_2, like=True, rate=4)
@@ -34,7 +37,7 @@ class BookSerializerTestCase(TestCase):
         # бывает сбивается сортировка, в таком случае добавляем order_by('id')
         books = Book.objects.all().annotate(
             annotated_likes=Count(Case(When(userbookrelation__like=True, then=1))),
-            rating=Avg('userbookrelation__rate'),
+            # rating=Avg('userbookrelation__rate'),
             price_with_discount=F('price') - (F('price') / 100) * F('discount'),
             owner_name=F('owner__username')
 
@@ -42,7 +45,7 @@ class BookSerializerTestCase(TestCase):
                 Prefetch('readers', queryset=User.objects.all().only('first_name', 'last_name'))).order_by('id')
 
         data = BookSerializer(books, many=True).data
-        print(data)
+        # print(data)
         expected_data = [
             {
                 'id': book_1.id,

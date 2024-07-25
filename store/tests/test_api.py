@@ -33,7 +33,7 @@ class BooksApiTestCase(APITestCase):
         # сериализатор отправляет данные с аннотированным полем, поэтому добавим его
         book = Book.objects.filter(id=self.book_1.id).annotate(annotated_likes=
                                        Count(Case(When(userbookrelation__like=True, then=1))),
-                                       rating=Avg('userbookrelation__rate'),
+                                       # rating=Avg('userbookrelation__rate'),
                                        price_with_discount=F('price') - (F('price') / 100) * F('discount'),
                                        owner_name=F('owner__username')).prefetch_related(
                                        Prefetch('readers', User.objects.all().only('first_name', 'last_name')))
@@ -60,7 +60,7 @@ class BooksApiTestCase(APITestCase):
         response = self.client.get(url)
 
         books = Book.objects.all().annotate(annotated_likes=Count(Case(When(userbookrelation__like=True, then=1))),
-                                    rating=Avg('userbookrelation__rate'),
+                                    # rating=Avg('userbookrelation__rate'),
                                     price_with_discount=F('price') - (F('price') / 100) * F('discount'),
                                     owner_name=F('owner__username')).prefetch_related(
                                     Prefetch('readers', queryset=User.objects.all().only('first_name', 'last_name'))).order_by('id')
@@ -82,7 +82,7 @@ class BooksApiTestCase(APITestCase):
 
         books = Book.objects.filter(id=self.book_3.id).annotate(annotated_likes=
                                 Count(Case(When(userbookrelation__like=True, then=1))),
-                                rating=Avg('userbookrelation__rate'),
+                                # rating=Avg('userbookrelation__rate'),
                                 price_with_discount=F('price') - (F('price') / 100) * F('discount'),
                                 owner_name=F('owner__username')).prefetch_related(
                                 Prefetch('readers', User.objects.all().only('first_name', 'last_name'))).order_by('id')
@@ -97,7 +97,7 @@ class BooksApiTestCase(APITestCase):
 
         books = Book.objects.filter(id__in=[self.book_1.id, self.book_3.id]).annotate(annotated_likes=
                             Count(Case(When(userbookrelation__like=True, then=1))),
-                            rating=Avg('userbookrelation__rate'),
+                            # rating=Avg('userbookrelation__rate'),
                             price_with_discount=F('price') - (F('price') / 100) * F('discount'),
                             owner_name=F('owner__username')).prefetch_related(
                             Prefetch('readers', User.objects.all().only('first_name', 'last_name'))).order_by('id')
@@ -112,7 +112,7 @@ class BooksApiTestCase(APITestCase):
 
         books = Book.objects.filter(id__in=[self.book_2.id, self.book_3.id, self.book_1.id]).annotate(annotated_likes=
                             Count(Case(When(userbookrelation__like=True, then=1))),
-                            rating=Avg('userbookrelation__rate'),
+                            # rating=Avg('userbookrelation__rate'),
                             price_with_discount=F('price') - (F('price') / 100) * F('discount'),
                             owner_name=F('owner__username')).prefetch_related(
                             Prefetch('readers', User.objects.all().only('first_name', 'last_name'))).order_by('-price')
